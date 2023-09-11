@@ -1,0 +1,101 @@
+import csv  # Import CSV for file handling
+
+class Transaction:
+    def __init__(self, category, amount, date, description):
+        self.category = category
+        self.amount = amount
+        self.date = date
+        self.description = description
+
+def add_expense(expenses):
+    category = input("Enter expense category: ")
+    amount = float(input("Enter expense amount: "))
+    date = input("Enter expense date (yyyy-mm-dd): ")
+    description = input("Enter expense description: ")
+
+    expenses.append(Transaction(category, amount, date, description))
+    print("Expense added successfully.")
+
+def add_income(income):
+    category = input("Enter income category: ")
+    amount = float(input("Enter income amount: "))
+    date = input("Enter income date (yyyy-mm-dd): ")
+    description = input("Enter income description: ")
+
+    income.append(Transaction(category, amount, date, description))
+    print("Income added successfully.")
+
+def calculate_budget(income, expenses):
+    total_income = sum(transaction.amount for transaction in income)
+    total_expenses = sum(transaction.amount for transaction in expenses)
+    remaining_budget = total_income - total_expenses
+
+    print(f"Total Income: ${total_income}")
+    print(f"Total Expenses: ${total_expenses}")
+    print(f"Remaining Budget: ${remaining_budget}")
+
+def analyze_expenses(expenses):
+    categories = set(transaction.category for transaction in expenses)
+    
+    print("Expense Categories:")
+    for category in categories:
+        total_category_expenses = sum(transaction.amount for transaction in expenses if transaction.category == category)
+        print(f"{category}: ${total_category_expenses}")
+
+def save_transactions(transactions, filename):
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Category", "Amount", "Date", "Description"])
+        for transaction in transactions:
+            writer.writerow([transaction.category, transaction.amount, transaction.date, transaction.description])
+    print("Transactions saved to file.")
+
+def load_transactions(filename):
+    income = []
+    expenses = []
+    try:
+        with open(filename, 'r') as file:
+            reader = csv.reader(file)
+            next(reader)  # Skip the header row
+            for row in reader:
+                category, amount, date, description = row
+                amount = float(amount)
+                if amount >= 0:
+                    income.append(Transaction(category, amount, date, description))
+                else:
+                    expenses.append(Transaction(category, -amount, date, description))
+        print("Transactions loaded from file.")
+    except FileNotFoundError:
+        print("File not found. No transactions loaded.")
+    
+    return income, expenses
+
+if __name__ == "__main__":
+    income = []
+    expenses = []
+    filename = "transactions.csv"
+
+    # Load transactions from a file if it exists
+    income, expenses = load_transactions(filename)
+
+    while True:
+        # Display menu options
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            add_income(income)
+        elif choice == "2":
+            add_expense(expenses)
+        elif choice == "3":
+            calculate_budget(income, expenses)
+        elif choice == "4":
+            analyze_expenses(expenses)
+        elif choice == "5":
+            save_transactions(income + expenses, filename)
+        elif choice == "6":
+            income, expenses = load_transactions(filename)
+        elif choice == "7":
+            print("Exiting the budget tracker. Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
